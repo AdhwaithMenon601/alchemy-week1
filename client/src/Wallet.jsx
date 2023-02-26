@@ -1,10 +1,12 @@
 import server from "./server";
+import wallet from "./SimulatedWallet";
 
-function Wallet({ address, setAddress, balance, setBalance }) {
-  async function onChange(evt) {
-    const address = evt.target.value;
-    setAddress(address);
-    if (address) {
+function Wallet({ user, setUser, balance, setBalance }) {
+  async function onSelectUser(evt) {
+    const selectedUser = evt.target.value;
+    setUser(selectedUser);
+    if (selectedUser) {
+      const address = wallet.getAddress(selectedUser);
       const {
         data: { balance },
       } = await server.get(`balance/${address}`);
@@ -17,12 +19,18 @@ function Wallet({ address, setAddress, balance, setBalance }) {
   return (
     <div className="container wallet">
       <h1>Your Wallet</h1>
-
       <label>
         Wallet Address
-        <input placeholder="Type an address, for example: 0x1" value={address} onChange={onChange}></input>
+        <select onChange={onSelectUser} value={user}>
+          <option value="">--- Choose a user wallet ---</option>
+          {wallet.users.map((u, i) => (
+            <option key={i} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
       </label>
-
+      <div className="balance">Address: {wallet.getAddress(user)}</div>
       <div className="balance">Balance: {balance}</div>
     </div>
   );

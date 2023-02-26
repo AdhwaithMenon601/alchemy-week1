@@ -1,5 +1,6 @@
 import { useState } from "react";
 import server from "./server";
+import wallet from "./SimulatedWallet";
 
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
@@ -10,17 +11,23 @@ function Transfer({ address, setBalance }) {
   async function transfer(evt) {
     evt.preventDefault();
 
+    const message = {
+      amount: parseInt(sendAmount),
+      recipient,
+    };
+    const signature = await wallet.sign(user, message);
+    const transaction = {
+      message,
+      signature,
+    };
+
     try {
       const {
         data: { balance },
-      } = await server.post(`send`, {
-        sender: address,
-        amount: parseInt(sendAmount),
-        recipient,
-      });
+      } = await server.post(`send`, transaction);
       setBalance(balance);
     } catch (ex) {
-      alert(ex.response.data.message);
+      alert(ex);
     }
   }
 
